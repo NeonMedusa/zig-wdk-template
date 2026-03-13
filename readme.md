@@ -38,19 +38,22 @@
 
 1. **安装 WDK 10.1.26100.6584**  
    从以下两个链接中找到WDK 10.1.26100.6584，版本号一定要准确，如果用其他版本需要自己手动到patch_cimport.zig中编写补丁
+   
    https://learn.microsoft.com/zh-cn/windows-hardware/drivers/other-wdk-downloads
+   
    https://learn.microsoft.com/zh-cn/windows-hardware/drivers/legacy-wdk-downloads
+   
 
-2. **安装 MSVC v143**  
+3. **安装 MSVC v143**  
    使用Visual Studio Installer安装 https://visualstudio.microsoft.com/zh-hans/downloads/
 
-3. **克隆项目**
+4. **克隆项目**
    ```bash
    git clone https://github.com/yourname/zig-wdk-template.git
    cd zig-wdk-template
    ```
 
-4. **编辑 `build.ps1`**  
+5. **编辑 `build.ps1`**  
    用编辑器打开 `build.ps1`，修改开头的配置区为你机器上的实际路径：
    ```powershell
    $WDK_ROOT         = "C:\Program Files (x86)\Windows Kits\10"
@@ -59,13 +62,13 @@
    $WDK_FULL_VERSION = "10.0.26100.6584"
    ```
 
-5. **运行构建脚本**
+6. **运行构建脚本**
    ```powershell
    .\build.ps1
    ```
    如果一切顺利，`zig-out/driver/owo.sys` 就是生成的驱动文件。
 
-6. **测试驱动（危险！）**  
+7. **测试驱动（危险！）**  
    ⚠️ **一定要在虚拟机中进行安装和测试！** 不然系统崩崩崩文件爆爆爆。
 
    - 虚拟机使用 **Win11 系统**，开启**测试模式**，关闭驱动签名验证。
