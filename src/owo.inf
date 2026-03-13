@@ -1,0 +1,152 @@
+[Version]
+Signature   = "$Windows NT$"
+Class       = MEDIA
+ClassGUID   = {4d36e96c-e325-11ce-bfc1-08002be10318}  ; 音频设备类
+Provider    = %ProviderName%
+DriverVer   = 02/22/2016, 1.0.0.1
+CatalogFile = owo.cat
+PnpLockDown = 1
+
+[SourceDisksNames]
+222 = "OWO Virtual Audio Driver Disk",,222
+
+[SourceDisksFiles]
+owo.sys = 222
+
+[Manufacturer]
+%MfgName% = OWO, NTamd64.10.0...22621  ; 目标 OS 版本（可根据需要修改）
+
+[OWO.NTamd64.10.0...22621]
+%OWO.DeviceDesc% = OWO_Device, Root\OWO_VIRTUAL_AUDIO
+
+[DestinationDirs]
+OWO_Device.CopyList = 13  ; 13 = %SystemRoot%\System32\drivers
+
+;========================= 设备安装 =========================
+[OWO_Device.NT]
+Include     = ks.inf, wdmaudio.inf
+Needs       = KS.Registration, WDMAUDIO.Registration
+CopyFiles   = OWO_Device.CopyList
+AddReg      = OWO_Device.AddReg
+
+[OWO_Device.NT.Interfaces]
+; 扬声器接口
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_WaveSpeaker%,    OWO.I.WaveSpeaker
+AddInterface = %KSCATEGORY_RENDER%,   %KSNAME_WaveSpeaker%,    OWO.I.WaveSpeaker
+AddInterface = %KSCATEGORY_REALTIME%, %KSNAME_WaveSpeaker%,    OWO.I.WaveSpeaker
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_TopologySpeaker%, OWO.I.TopologySpeaker
+AddInterface = %KSCATEGORY_TOPOLOGY%, %KSNAME_TopologySpeaker%, OWO.I.TopologySpeaker
+
+; 麦克风接口
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_WaveMic%,        OWO.I.WaveMic
+AddInterface = %KSCATEGORY_REALTIME%, %KSNAME_WaveMic%,        OWO.I.WaveMic
+AddInterface = %KSCATEGORY_CAPTURE%,  %KSNAME_WaveMic%,        OWO.I.WaveMic
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_TopologyMic%,    OWO.I.TopologyMic
+AddInterface = %KSCATEGORY_TOPOLOGY%, %KSNAME_TopologyMic%,    OWO.I.TopologyMic
+
+[OWO_Device.NT.Services]
+AddService = owo, 0x00000002, OWO_Service_Inst
+
+[OWO_Service_Inst]
+DisplayName    = %OWO.SvcDesc%
+ServiceType    = 1      ; SERVICE_KERNEL_DRIVER
+StartType      = 3      ; SERVICE_DEMAND_START
+ErrorControl   = 1      ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\owo.sys
+
+[OWO_Device.NT.HW]
+AddReg = AUDIOHW.AddReg
+
+[AUDIOHW.AddReg]
+HKR,,DeviceType,0x10001,0x0000001D  ; 音频设备类型
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GRGWGX;;;BA)(A;;GRGWGX;;;WD)(A;;GRGWGX;;;RC)"  ; 安全描述符
+
+;========================= 设备 CopyFiles 和 AddReg =========================
+[OWO_Device.CopyList]
+owo.sys
+
+[OWO_Device.AddReg]
+HKR,,AssociatedFilters,,"wdmaud,swmidi,redbook"  ; 关联的系统音频滤镜
+HKR,,Driver,,owo.sys
+
+; 电源设置（最小化，可根据需要调整）
+HKR,PowerSettings,SingleComponentMultiFxStates,3,1,0,0,0
+HKR,PowerSettings,ConservationIdleTime,3,3,0,0,0
+HKR,PowerSettings,PerformanceIdleTime,3,3,0,0,0
+HKR,PowerSettings,IdlePowerState,3,3,0,0,0
+
+; 注册系统音频驱动入口
+HKR,Drivers,SubClasses,,"wave,midi,mixer"
+HKR,Drivers\wave\wdmaud.drv,Driver,,wdmaud.drv
+HKR,Drivers\midi\wdmaud.drv,Driver,,wdmaud.drv
+HKR,Drivers\mixer\wdmaud.drv,Driver,,wdmaud.drv
+HKR,Drivers\wave\wdmaud.drv,Description,,%OWO.DeviceDesc%
+HKR,Drivers\midi\wdmaud.drv,Description,,%OWO_MIDI%
+HKR,Drivers\mixer\wdmaud.drv,Description,,%OWO.DeviceDesc%
+
+;========================= 接口节（扬声器） =========================
+[OWO.I.WaveSpeaker]
+AddReg = OWO.I.WaveSpeaker.AddReg
+
+[OWO.I.WaveSpeaker.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%                   ; 系统音频代理 CLSID
+HKR,,FriendlyName,,%OWO.WaveSpeaker.szPname%
+
+[OWO.I.TopologySpeaker]
+AddReg = OWO.I.TopologySpeaker.AddReg
+
+[OWO.I.TopologySpeaker.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%OWO.TopologySpeaker.szPname%
+HKR,EP\0,%PKEY_AudioEndpoint_Association%,,%KSNODETYPE_ANY%
+HKR,EP\0,%PKEY_AudioEndpoint_Supports_EventDriven_Mode%,0x00010001,0x1
+
+;========================= 接口节（麦克风） =========================
+[OWO.I.WaveMic]
+AddReg = OWO.I.WaveMic.AddReg
+
+[OWO.I.WaveMic.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%OWO.WaveMic.szPname%
+
+[OWO.I.TopologyMic]
+AddReg = OWO.I.TopologyMic.AddReg
+
+[OWO.I.TopologyMic.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%OWO.TopologyMic.szPname%
+HKR,EP\0,%PKEY_AudioEndpoint_Association%,,%KSNODETYPE_ANY%
+HKR,EP\0,%PKEY_AudioEndpoint_Supports_EventDriven_Mode%,0x00010001,0x1
+
+;========================= 字符串 =========================
+[Strings]
+
+; 非本地化字符串
+KSNAME_WaveSpeaker          = "WaveSpeaker"
+KSNAME_TopologySpeaker      = "TopologySpeaker"
+KSNAME_WaveMic              = "WaveMic"
+KSNAME_TopologyMic          = "TopologyMic"
+
+Proxy.CLSID                 = "{17CCA71B-ECD7-11D0-B908-00A0C9223196}"  ; 系统音频代理
+KSCATEGORY_AUDIO            = "{6994AD04-93EF-11D0-A3CC-00A0C9223196}"
+KSCATEGORY_RENDER           = "{65E8773E-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_CAPTURE          = "{65E8773D-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_REALTIME         = "{EB115FFC-10C8-4964-831D-6DCB02E6F23F}"
+KSCATEGORY_TOPOLOGY         = "{DDA54A40-1E4C-11D1-A050-405705C10000}"
+KSNODETYPE_ANY              = "{00000000-0000-0000-0000-000000000000}"
+
+PKEY_AudioEndpoint_Association               = "{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},2"
+PKEY_AudioEndpoint_Supports_EventDriven_Mode = "{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},7"
+
+; 本地化字符串（可翻译）
+ProviderName = "OWO Virtual Audio"
+MfgName      = "OWO Development"
+
+OWO.DeviceDesc = "OWO Virtual Audio Device"
+OWO.SvcDesc    = "OWO Virtual Audio Driver"
+OWO_MIDI       = "OWO Virtual MIDI Device"
+
+OWO.WaveSpeaker.szPname     = "OWO Virtual Speaker"
+OWO.TopologySpeaker.szPname = "OWO Virtual Speaker"
+OWO.WaveMic.szPname         = "OWO Virtual Microphone"
+OWO.TopologyMic.szPname     = "OWO Virtual Microphone"
